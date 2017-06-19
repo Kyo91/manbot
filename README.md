@@ -5,7 +5,7 @@ A simple bot to post man page links. And other stuff, probably.
 ## Usage
 
 Get a discord api token and put it in a file `discord-token.txt` in the project root.
-Build with [lein][https://leiningen.org/]
+Build with [lein](https://leiningen.org/)
 
     $ lein uberjar
     $ java -jar target/uberjar/manbot-0.1.0-standalone.jar
