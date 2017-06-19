@@ -98,7 +98,7 @@
 
 (defn answer-request [data answer-fn]
   (log/info "answer-request:\n" data)
-  (let [words (clojure.string/split (get data "content") #" ")
+  (let [words (clojure.string/split (get data "content" "") #" ")
         command (first words)
         other (rest words)
         id (get data "channel_id")

@@ -1,36 +1,16 @@
 # manbot
 
-FIXME: description
-
-## Installation
-
-Download from http://example.com/FIXME.
+A simple bot to post man page links. And other stuff, probably.
 
 ## Usage
 
-FIXME: explanation
+Get a discord api token and put it in a file `discord-token.txt` in the project root.
+Build with [lein][https://leiningen.org/]
 
-    $ java -jar manbot-0.1.0-standalone.jar [args]
+    $ lein uberjar
+    $ java -jar target/uberjar/manbot-0.1.0-standalone.jar
 
-## Options
+You'll need to add it to a discord server after.
 
-FIXME: listing of options this app accepts.
+Get man page results by typing: `!man command` or `!manall command` into discord depending on whether you want the first man page or all of them sent.
 
-## Examples
-
-...
-
-### Bugs
-
-...
-
-### Any Other Sections
-### That You Think
-### Might be Useful
-
-## License
-
-Copyright © 2017 FIXME
-
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.

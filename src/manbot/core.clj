@@ -3,7 +3,9 @@
   (:require [clj-http.client :as http]
             [manbot.discord :refer [answer-request connect disconnect answer-command]]
             [clojure.core.match :refer [match]]
-            [environ.core :refer [env]]))
+            [environ.core :refer [env]]
+            [hickory.core :refer [parse as-hickory]]
+            [hickory.select :as s]))
 
 (defonce token (slurp "discord-token.txt"))
 
@@ -29,11 +31,30 @@
   (when-let [results (valid-pages-for-command command)]
     (String/join "\n" results)))
 
+(defn lmgtfy [phrase]
+  (when (seq phrase)
+       (let [query (String/join "+" phrase)]
+         (str "http://lmgtfy.com/?q=" query))))
+
+(defn xkcd-title [url]
+  (let [page (:body (http/get url))
+        htree (-> page parse as-hickory)
+        title (->> htree
+                   (s/select (s/child (s/id "comic") (s/tag :img)))
+                   first
+                   :attr
+                   :title)]
+    (when (seq title)
+      title))
+  )
+
 (defn answer-commands [command data]
   (match command
          "!man" (man-one (first data))
          "!manall" (man-all (first data))
+         "!lmgtfy" (lmgtfy data)
          :else nil))
+
 
 (defn man-requests [type data]
   (answer-request data answer-commands))
