@@ -1,7 +1,7 @@
 (ns manbot.core
   (:gen-class)
   (:require [clj-http.client :as http]
-            [manbot.discord :refer [answer-request connect disconnect]]
+            [manbot.discord :refer [answer-request connect disconnect answer-command]]
             [clojure.core.match :refer [match]]
             [environ.core :refer [env]]))
 
@@ -31,8 +31,8 @@
 
 (defn answer-commands [command data]
   (match command
-         "!man" (man-one (first (data)))
-         "!manall" (man-all (first (data)))
+         "!man" (man-one (first data))
+         "!manall" (man-all (first data))
          :else nil))
 
 (defn man-requests [type data]

@@ -2,6 +2,7 @@
 (ns manbot.discord
   (:require [clj-http.client :as http]
             [clojure.data.json :as json]
+            [clojure.tools.logging :as log]
             [gniazdo.core :as ws]))
 
 (defonce the-token (atom nil))
@@ -36,6 +37,7 @@
   (reset! the-socket
           (ws/connect 
             @the-gateway
+            :on-error #(println %)
             :on-receive #(let [received (json/read-str %)
                                logevent (if log-events (println "\n" %))
                                op (get received "op")
@@ -80,21 +82,27 @@
               :accept :json}))
 
 (defn post-message-with-mention [channel_id message user_id]
+  (log/info "Starting post-with-mention with parameters: "
+            "\nChannel ID: " channel_id
+            "\nMessage: " message
+            "\nUser ID: " user_id)
   (post-message channel_id (str "<@" user_id ">" message)))
 
 (defn answer-command [data command answer]
   (if (= command (get data "content"))
-    (post-message-with-mention 
-      (get data "channel_id") 
+    (log/info "answer-command:\n"data)
+    (post-message-with-mention
+      (get data "channel_id")
       (str " " answer)
       (get (get data "author") "id"))))
 
 (defn answer-request [data answer-fn]
+  (log/info "answer-request:\n" data)
   (let [words (clojure.string/split (get data "content") #" ")
         command (first words)
-        data (rest words)
+        other (rest words)
         id (get data "channel_id")
-        message (answer-fn command data)
-        user_id (get (get data "autor") "id")]
+        message (answer-fn command other)
+        user_id (get (get data "author") "id")]
     (when (seq message)
       (post-message-with-mention id (str " " message) user_id))))

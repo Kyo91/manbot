@@ -8,7 +8,8 @@
                  [org.clojure/data.json "0.2.6"]
                  [stylefruits/gniazdo "1.0.0"]
                  [org.clojure/core.match "0.2.2"]
-                 [environ "1.1.0"]]
+                 [environ "1.1.0"]
+                 [org.clojure/tools.logging "0.4.0"]]
   :main ^:skip-aot manbot.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})
