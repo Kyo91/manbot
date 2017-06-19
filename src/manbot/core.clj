@@ -10,7 +10,7 @@
 (defonce token (slurp "discord-token.txt"))
 
 (defn page-valid? [url]
-  (let [response (http/get url {:throw-exceptions? false})]
+  (let [response (http/head url {:throw-exceptions? false})]
     (= 200 (:status response))))
 
 (defn valid-pages-for-command [command]
