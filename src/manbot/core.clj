@@ -5,7 +5,7 @@
             [clojure.core.match :refer [match]]
             [environ.core :refer [env]]))
 
-(defonce token (env :token))
+(defonce token (slurp "discord-token.txt"))
 
 (defn page-valid? [url]
   (let [response (http/get url {:throw-exceptions? false})]
