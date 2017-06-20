@@ -9,7 +9,8 @@
 
 (defonce token (slurp "discord-token.txt"))
 
-(def vote-channel (chan 10))
+(def vote-channel (async/chan 10))
+(declare command-map)
 
 (defn page-valid? [url]
   (let [response (http/head url {:throw-exceptions? false})]
@@ -50,15 +51,24 @@
     (String/join "\n" final-results)
     "No poll in progress"))
 
-(defn answer-commands [command data]
-  (match command
-         "!man" (man-one (first data))
-         "!manall" (man-all (first data))
-         "!lmgtfy" (lmgtfy data)
-         "!poll" (start-poll data)
-         "!endpoll" (end-poll)
-         :else nil))
+(defn how-do-i-mute []
+  "To mute a channel on desktop enter the channel you want to mute and click the bell at the top right.")
 
+(defn list-commands []
+  (let [commands (keys command-map)
+        command-list (conj commands "Valid Commands:")]
+    (String/join "\n" command-list)))
+
+(def command-map
+  {"!man" (fn [d] (man-one (first d)))
+   "!manall" (fn [d] (man-all (first d)))
+   "!lmgtfy" (fn [d] (lmgtfy d))
+   "!mute-channel" (fn [d] (how-do-i-mute))
+   "!help" (fn [d] (list-commands))})
+
+(defn answer-commands [command data]
+  (when-let [dispatch (get command-map command)]
+    (dispatch data)))
 
 (defn man-requests [type data]
   (answer-request data answer-commands))
@@ -68,7 +78,7 @@
         [command other] (str/split (get data "content" "") #" " 2)
         payload {:id id :vote other}]
     (when (and (= command "!vote") (seq other))
-      (go (async/>! vote-channel payload)))))
+      (async/go (async/>! vote-channel payload)))))
 
 (defn -main
   "Start up bot"

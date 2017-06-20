@@ -1,4 +1,4 @@
-(defproject manbot "0.1.0"
+(defproject manbot "0.1.1"
   :description "A very broken discord bot."
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
