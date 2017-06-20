@@ -46,7 +46,7 @@
 
 (defn end-poll []
   (when (poll-active?)
-    (let [title (str (show-topic) "  Poll Results:")
+    (let [title (str "**" (show-topic) "** Poll Results:")
           results (conj (show-results) title)]
       (reset! poll nil)
       (reset! voters nil)

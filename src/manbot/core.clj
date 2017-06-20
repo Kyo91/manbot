@@ -39,12 +39,13 @@
        (let [query (String/join "+" phrase)]
          (str "http://lmgtfy.com/?q=" query))))
 
-(defn start-poll [topic]
-  (if-not (seq topic)
+(defn start-poll [topic-coll]
+  (if-not (seq topic-coll)
     "No topic specified for poll"
-    (if (poll/start-poll (String/join " " topic))
-      (str "Started poll: " topic)
-      (str "Poll already started: " (poll/show-topic)))))
+    (let [topic (String/join " " topic-coll)]
+      (if (poll/start-poll topic)
+        (str "Started poll: **" topic "**")
+        (str "Poll already started: **" (poll/show-topic) "**")))))
 
 (defn end-poll []
   (if-let [final-results (poll/end-poll)]
@@ -64,7 +65,10 @@
    "!manall" (fn [d] (man-all (first d)))
    "!lmgtfy" (fn [d] (lmgtfy d))
    "!mute-channel" (fn [d] (how-do-i-mute))
-   "!help" (fn [d] (list-commands))})
+   "!help" (fn [d] (list-commands))
+   "!poll" (fn [d] (start-poll d))
+   "!endpoll" (fn [d] (end-poll))
+   "!vote" (fn [d] nil)})
 
 (defn answer-commands [command data]
   (when-let [dispatch (get command-map command)]
@@ -86,7 +90,7 @@
   (println "Starting up bot....")
   (poll/accumulate-votes vote-channel)
   (connect token
-           {"MESSAGE_CREATE" [man-requests]
+           {"MESSAGE_CREATE" [man-requests record-vote]
             "MESSAGE_UPDATE" [man-requests]
             "ALL_OTHER" [log-event]
             }
