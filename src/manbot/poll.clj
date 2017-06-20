@@ -1,20 +1,19 @@
 (ns manbot.poll
-  (:require [clojure.core.async]))
+  (:require [clojure.core.async :refer [go-loop <!]]))
 
-(defonce active-poll (atom nil))
+(defonce poll (atom nil))
 (defonce voters (atom nil))
 
-
 (defn poll-active? []
-  (seq @active-poll))
+  (seq @poll))
 
 (defn start-poll [topic]
   (when-not (poll-active?)
-    (reset! active-poll {:topic topic :votes {}})
+    (reset! poll {:topic topic :votes {}})
     (reset! voters {})))
 
 (defn swap-vote! [f vote not-found]
-  (swap! active-poll
+  (swap! poll
          #(assoc-in % [:votes vote]
                     (f (get-in % [:votes vote] not-found)))))
 
@@ -27,7 +26,7 @@
 
 (defn show-results []
   (when (poll-active?)
-    (let [votes (:votes @active-poll)
+    (let [votes (:votes @poll)
         sorted (into (sorted-map-by
                       (fn [key1 key2]
                         (compare [(get votes key2) key2]
@@ -37,11 +36,27 @@
 
 (defn show-topic []
   (when (poll-active?)
-    (:topic @active-poll)))
+    (:topic @poll)))
+
+(defn prune-empty []
+  (when (poll-active?)
+    (let [oldvotes (:votes @poll)
+          newvotes (filter (fn [[k v]] (not= 0 v)) oldvotes)]
+      (swap! poll #(assoc % :votes (into {} newvotes))))))
 
 (defn end-poll []
   (when (poll-active?)
-    (let [results (show-results)]
-    (reset! active-poll nil)
-    (reset! voters nil)
-    results)))
+    (let [title (str (show-topic) "  Poll Results:")
+          results (conj (show-results) title)]
+      (reset! poll nil)
+      (reset! voters nil)
+      results)))
+
+(defn accumulate-votes [vote-chan]
+  (go-loop [vote-map (<! vote-chan)]
+    (let [userid (:id vote-map)
+          vote (:vote vote-map)]
+      (add-vote userid vote)
+      (prune-empty)
+      (recur (<! vote-chan)))))
+

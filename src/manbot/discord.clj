@@ -94,7 +94,7 @@
     (post-message-with-mention
       (get data "channel_id")
       (str " " answer)
-      (get (get data "author") "id"))))
+      (get-in data ["author" "id"]))))
 
 (defn answer-request [data answer-fn]
   (log/info "answer-request:\n" data)
@@ -103,6 +103,6 @@
         other (rest words)
         id (get data "channel_id")
         message (answer-fn command other)
-        user_id (get (get data "author") "id")]
+        user_id (get-in data ["author" "id"])]
     (when (seq message)
       (post-message-with-mention id (str " " message) user_id))))

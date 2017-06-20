@@ -1,5 +1,5 @@
 (defproject manbot "0.1.0"
-  :description "FIXME: write description"
+  :description "A very broken discord bot."
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
@@ -11,6 +11,8 @@
                  [environ "1.1.0"]
                  [org.clojure/tools.logging "0.4.0"]
                  [hickory "0.7.1"]
+                 [org.clojure/tools.analyzer "0.6.9"]
+                 [org.clojure/tools.analyzer.jvm "0.6.9"]
                  [org.clojure/core.async "0.3.443"]]
   :main ^:skip-aot manbot.core
   :target-path "target/%s"
