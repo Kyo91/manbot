@@ -60,6 +60,13 @@
         command-list (conj commands "Valid Commands:")]
     (String/join "\n" command-list)))
 
+(defn poll-status []
+  (if-not (poll/poll-active?)
+    "No active poll."
+    (let [header (str "Current results for poll: **" (poll/show-topic) "**")
+          results (conj (poll/show-results) header)]
+      (String/join "\n" results))))
+
 (def command-map
   {"!man" (fn [d] (man-one (first d)))
    "!manall" (fn [d] (man-all (first d)))
@@ -68,7 +75,8 @@
    "!help" (fn [d] (list-commands))
    "!poll" (fn [d] (start-poll d))
    "!endpoll" (fn [d] (end-poll))
-   "!vote" (fn [d] nil)})
+   "!vote" (fn [d] nil)
+   "!pollstatus" (fn [d] (poll-status))})
 
 (defn answer-commands [command data]
   (when-let [dispatch (get command-map command)]
