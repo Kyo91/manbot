@@ -9,6 +9,8 @@
 
 (defonce token (slurp "discord-token.txt"))
 
+(declare command-map)
+
 (defn page-valid? [url]
   (let [response (http/head url {:throw-exceptions? false})]
     (= 200 (:status response))))
@@ -36,25 +38,24 @@
        (let [query (String/join "+" phrase)]
          (str "http://lmgtfy.com/?q=" query))))
 
-(defn xkcd-title [url]
-  (let [page (:body (http/get url))
-        htree (-> page parse as-hickory)
-        title (->> htree
-                   (s/select (s/child (s/id "comic") (s/tag :img)))
-                   first
-                   :attr
-                   :title)]
-    (when (seq title)
-      title))
-  )
+(defn how-do-i-mute []
+  "To mute a channel on desktop enter the channel you want to mute and click the bell at the top right.")
+
+(defn list-commands []
+  (let [commands (keys command-map)
+        command-list (conj commands "Valid Commands:")]
+    (String/join "\n" command-list)))
+
+(def command-map
+  {"!man" (fn [d] (man-one (first d)))
+   "!manall" (fn [d] (man-all (first d)))
+   "!lmgtfy" (fn [d] (lmgtfy d))
+   "!mute-channel" (fn [d] (how-do-i-mute))
+   "!help" (fn [d] (list-commands))})
 
 (defn answer-commands [command data]
-  (match command
-         "!man" (man-one (first data))
-         "!manall" (man-all (first data))
-         "!lmgtfy" (lmgtfy data)
-         :else nil))
-
+  (when-let [dispatch (get command-map command)]
+    (dispatch data)))
 
 (defn man-requests [type data]
   (answer-request data answer-commands))
