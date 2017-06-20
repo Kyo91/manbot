@@ -10,7 +10,8 @@
                  [org.clojure/core.match "0.2.2"]
                  [environ "1.1.0"]
                  [org.clojure/tools.logging "0.4.0"]
-                 [hickory "0.7.1"]]
+                 [hickory "0.7.1"]
+                 [org.clojure/core.async "0.3.443"]]
   :main ^:skip-aot manbot.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})
