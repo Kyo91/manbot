@@ -96,7 +96,7 @@
       (str " " answer)
       (get-in data ["author" "id"]))))
 
-(defn answer-request [data answer-fn]
+(defn answer-request [data answer-fn & [no-mention]]
   (log/info "answer-request:\n" data)
   (let [words (clojure.string/split (get data "content" "") #" ")
         command (first words)
@@ -105,4 +105,6 @@
         message (answer-fn command other)
         user_id (get-in data ["author" "id"])]
     (when (seq message)
-      (post-message-with-mention id (str " " message) user_id))))
+      (if (seq no-mention)
+        (post-message id message)
+        (post-message-with-mention id (str " " message) user_id)))))
