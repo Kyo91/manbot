@@ -23,7 +23,7 @@
 
 (defn content-minus-command [content]
   (when (seq content)
-    (let [[command other] (str/split content #" " 2)]
+    (let [[command & other] (str/split content #" ")]
       other)))
 
 (def message-pub
@@ -127,8 +127,8 @@
 
 (defn register-message-content
   "A convenience function for registering functions that only need the message content (minus command)."
-  [command-name function]
+  [command-name function & [mention?]]
   (register-on-message command-name (fn [payload] (-> payload
                                                      (get "content")
                                                      content-minus-command
-                                                     function))))
+                                                     function)) mention?))

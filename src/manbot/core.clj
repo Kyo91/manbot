@@ -3,9 +3,11 @@
   (:require [clojure.core.async :as async]
             [clojure.string :as str]
             [manbot.discord :refer [answer-request connect]]
+            [manbot.discord-async :as da]
             [manbot.poll :as poll]
             [manbot.general :as general]
-            [manbot.man :as man]))
+            [manbot.man :as man]
+            [clojure.tools.logging :as log]))
 
 (declare list-commands)
 
@@ -28,6 +30,15 @@
     (String/join "\n" final-results)
     "No poll in progress"))
 
+(defn record-vote [data]
+  (let [id (get-in data ["author" "id"])
+        [command other] (str/split (get data "content" "") #" " 2)
+        payload {:id id :vote other}]
+    (when (seq other)
+      (async/go (async/>! vote-channel payload))
+      ; nil to suppress message.
+      nil)))
+
 (defn poll-status []
   (if-not (poll/poll-active?)
     "No active poll."
@@ -35,50 +46,39 @@
           results (conj (poll/show-results) header)]
       (String/join "\n" results))))
 
-(def command-map
-  {"!man" (fn [d] (man/man-one (first d)))
-   "!manall" (fn [d] (man/man-all (first d)))
-   "!lmgtfy" (fn [d] (general/lmgtfy d))
-   "!mute-channel" (fn [d] (general/how-do-i-mute))
-   "!help" (fn [d] (list-commands))
-   "!poll" (fn [d] (start-poll d))
-   "!endpoll" (fn [d] (end-poll))
-   "!vote" (fn [d] nil)
-   "!pollstatus" (fn [d] (poll-status))})
+(def content-commands
+  [["!man" (fn [d] (man/man-one (first d))) true]
+   ["!man-all" (fn [d] (man/man-all (first d))) true]
+   ["!lmgtfy" (fn [d] (general/lmgtfy d))]
+   ["!mute-channel" (fn [d] (general/how-do-i-mute))]
+   ["!help" (fn [d] (list-commands)) true]
+   ["!poll" (fn [d] (start-poll d))]
+   ["!end-poll" (fn [d] (end-poll))]
+   ["!poll-status" (fn [d] (poll-status)) true]])
+
+(def payload-commands
+  [["!vote" record-vote]])
+
+(def bot-commands "All vaid commands for the bot."
+  (concat content-commands payload-commands))
+
+(defn register-with [registrar command-vec]
+  (doseq [[command f mention?] command-vec]
+    (registrar command f mention?)))
+
+(defn register-commands []
+  (register-with da/register-message-content content-commands)
+  (register-with da/register-on-message payload-commands))
 
 (defn list-commands []
-  (let [commands (keys command-map)
+  (let [commands (map first bot-commands)
         command-list (conj commands "Valid Commands:")]
     (String/join "\n" command-list)))
-
-
-(defn command-dispatch [command data]
-  (when-let [dispatch (get command-map command)]
-    (dispatch data)))
-
-(defn respond-request [type data]
-  (answer-request data command-dispatch))
-
-(defn record-vote [type data]
-  (let [id (get-in data ["author" "id"])
-        [command other] (str/split (get data "content" "") #" " 2)
-        payload {:id id :vote other}]
-    (when (and (= command "!vote") (seq other))
-      (async/go (async/>! vote-channel payload)))))
 
 (defn -main
   "Start up bot"
   [& args]
-  (println "Starting up bot....")
+  (log/info "Starting up bot....")
   (poll/accumulate-votes vote-channel)
-  (connect token
-           {"MESSAGE_CREATE" [respond-request record-vote]
-            "MESSAGE_UPDATE" [respond-request]
-            "ALL_OTHER" [log-event]
-            }
-           true))
-
-(defn list-commands []
-  (let [commands (keys command-map)
-        command-list (conj commands "Valid Commands:")]
-    (String/join "\n" command-list)))
+  (register-commands)
+  (da/connect token true))
