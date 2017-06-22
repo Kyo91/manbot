@@ -123,7 +123,8 @@
         (when (seq message)
           (if mention?
             (post-message-with-mention channel-id message user-id)
-            (post-message channel-id message)))))))
+            (post-message channel-id message))))
+      (recur))))
 
 (defn register-message-content
   "A convenience function for registering functions that only need the message content (minus command)."
