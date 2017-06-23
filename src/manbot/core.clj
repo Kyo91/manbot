@@ -51,6 +51,7 @@
    ["!man-all" (fn [d] (man/man-all (first d))) true]
    ["!lmgtfy" (fn [d] (general/lmgtfy d))]
    ["!mute-channel" (fn [d] (general/how-do-i-mute))]
+   ["!xkcd" (fn [d] (general/xkcd (first d))) true]
    ["!help" (fn [d] (list-commands)) true]
    ["!poll" (fn [d] (start-poll d))]
    ["!end-poll" (fn [d] (end-poll))]

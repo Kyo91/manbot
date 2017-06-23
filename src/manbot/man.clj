@@ -1,9 +1,5 @@
 (ns manbot.man
-  (:require [clj-http.client :as http]))
-
-(defn page-valid? [url]
-  (let [response (http/head url {:throw-exceptions? false})]
-    (= 200 (:status response))))
+  (:require [manbot.general :refer [page-valid?]]))
 
 (defn valid-pages-for-command [command]
   (when (seq command)
