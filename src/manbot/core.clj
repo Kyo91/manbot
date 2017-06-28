@@ -2,7 +2,6 @@
   (:gen-class)
   (:require [clojure.core.async :as async]
             [clojure.string :as str]
-            [manbot.discord :refer [answer-request connect]]
             [manbot.discord-async :as da]
             [manbot.poll :as poll]
             [manbot.general :as general]
@@ -53,7 +52,7 @@
    ["!mute-channel" (fn [d] (general/how-do-i-mute))]
    ["!xkcd" (fn [d] (general/xkcd (first d))) true]
    ["!help" (fn [d] (list-commands)) true]
-   ["!poll" (fn [d] (start-poll d))]
+   ["!poll" start-poll]
    ["!end-poll" (fn [d] (end-poll))]
    ["!poll-status" (fn [d] (poll-status)) true]])
 

@@ -18,7 +18,7 @@
 
 (defn find-command [payload]
   (let [content (get payload "content")]
-    (when (and (seq content) (= \! (String/.charAt content 0)))
+    (when (and (seq content) (= \! (first content)))
       (first (str/split content #" ")))))
 
 (defn content-minus-command [content]
@@ -74,7 +74,7 @@
                          (if (nil? @the-heartbeat-interval)
                            (Thread/sleep 100)
                            (do
-                             (if log-events? (println "\nSending heartbeat " @the-seq))
+                             (if log-events? (log/debug "\nSending heartbeat " @the-seq))
                              (ws/send-msg @the-socket (json/write-str {:op 1, :d @the-seq}))
                              (Thread/sleep @the-heartbeat-interval)
                              )))
@@ -94,6 +94,9 @@
   (recur token log-events?))
 
 (defn post-message [channel-id message]
+  (log/info "Starting post-message with parameters: "
+            "\nChannel ID: " channel-id
+            "\n Message: " message)
   (http/post (str "https://discordapp.com/api/channels/" channel-id "/messages")
              {:body (json/write-str {:content message
                                      :nonce (str (System/currentTimeMillis))
